@@ -9,7 +9,7 @@ A basic Retrieval-Augmented Generation (RAG) application that allows users to up
 - **Styling**: Vanilla CSS (Premium Dark Theme)
 
 ## Prerequisites
-- Python 3.9+
+- Python 3.11+
 - Node.js & npm
 - [Groq API Key](https://console.groq.com/keys)
 
