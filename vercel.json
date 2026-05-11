@@ -5,7 +5,6 @@
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "buildCommand": "npm run build",
         "distDir": "dist"
       }
     },
@@ -17,23 +16,27 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "backend/main.py"
+      "destination": "/backend/main.py"
     },
     {
       "source": "/health",
-      "destination": "backend/main.py"
+      "destination": "/backend/main.py"
     },
     {
       "source": "/upload",
-      "destination": "backend/main.py"
+      "destination": "/backend/main.py"
     },
     {
       "source": "/ask",
-      "destination": "backend/main.py"
+      "destination": "/backend/main.py"
     },
     {
-      "source": "/(.*)",
-      "destination": "frontend/$1"
+      "source": "/((?!api|health|upload|ask).*)$",
+      "destination": "/frontend/$1"
+    },
+    {
+      "source": "/",
+      "destination": "/frontend/index.html"
     }
   ]
 }
