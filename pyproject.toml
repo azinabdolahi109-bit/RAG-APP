@@ -3,6 +3,3 @@ name = "rag-app"
 version = "0.1.0"
 description = "A multi-service RAG application for Excel data"
 requires-python = "==3.11.*"
-
-[tool.uv]
-python-version = "3.11"
