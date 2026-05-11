@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Upload, Send, FileText, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:8000';
+// Determine API base URL based on environment
+const API_BASE_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:8000' 
+  : '/api';
 
 function App() {
   const [file, setFile] = useState(null);

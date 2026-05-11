@@ -1,6 +1,6 @@
 import os
 import shutil
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -55,36 +55,32 @@ if client:
 else:
     logger.error("Groq client not initialized - no API key.")
 
+# API Router
+api_router = APIRouter(prefix="/api")
+
+@api_router.get("/health")
+async def health_check():
+    return {"status": "healthy", "model": "llama-3.1-8b-instant"}
+
+@api_router.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        content = await file.read()
+        file_path = f"data/{file.filename}"
+        os.makedirs("data", exist_ok=True)
+        with open(file_path, "wb") as f:
+            f.write(content)
+        
+        rag_engine.index_excel(file_path)
+        return {"message": f"Successfully indexed {file.filename}", "filename": file.filename}
+    except Exception as e:
+        logger.error(f"Upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 class QuestionRequest(BaseModel):
     question: str
 
-@app.get("/health")
-async def health():
-    return {"status": "healthy", "index_ready": rag_engine.index is not None}
-
-@app.post("/upload")
-async def upload_excel(file: UploadFile = File(...)):
-    if not file.filename.endswith(('.xlsx', '.xls')):
-        raise HTTPException(status_code=400, detail="Invalid file type. Please upload an Excel file.")
-    
-    # Save temporary file
-    temp_path = f"data/{file.filename}"
-    os.makedirs("data", exist_ok=True)
-    with open(temp_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    
-    try:
-        success = rag_engine.process_excel(temp_path)
-        if not success:
-            raise HTTPException(status_code=400, detail="Excel file is empty or could not be processed.")
-        return {"message": "File uploaded and indexed successfully", "filename": file.filename}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
-
-@app.post("/ask")
+@api_router.post("/ask")
 async def ask_question(request: QuestionRequest):
     if not client:
         raise HTTPException(status_code=500, detail="Groq client not initialized. Check GROQ_API_KEY.")
@@ -129,6 +125,11 @@ async def ask_question(request: QuestionRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Groq API Error: {str(e)}")
+
+# Include the router for Vercel (/api prefix)
+app.include_router(api_router)
+# Also include without prefix for local development convenience
+app.include_router(api_router, prefix="") 
 
 if __name__ == "__main__":
     import uvicorn
