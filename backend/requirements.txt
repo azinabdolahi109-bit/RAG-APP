@@ -2,7 +2,7 @@ fastapi
 uvicorn
 pandas
 openpyxl
-faiss-cpu
+numpy
 sentence-transformers
 groq
 python-multipart

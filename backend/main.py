@@ -85,7 +85,7 @@ async def ask_question(request: QuestionRequest):
     if not client:
         raise HTTPException(status_code=500, detail="Groq client not initialized. Check GROQ_API_KEY.")
         
-    if rag_engine.index is None:
+    if rag_engine.index is None and getattr(rag_engine, 'embeddings', None) is None:
         # Try to load if exists
         if not rag_engine.load_index():
             raise HTTPException(status_code=400, detail="No index found. Please upload a file first.")
